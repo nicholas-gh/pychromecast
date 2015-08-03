@@ -6,7 +6,7 @@
 from __future__ import print_function
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import os
-
+import signal
 
 def get_localhost():
 	try:
@@ -125,8 +125,13 @@ class StreamHTTP(BaseHTTPRequestHandler):
 				self.wfile.write(chunk)
 				chunk = source.read(chunksize)
 
-
+def signal_handler(signal, frame):
+        global stop_signal
+        stop_signal = True
+        
 def cast(args):
+        global stop_signal
+        
 	import contextlib
 	import pychromecast
 	#import pychromecast.controllers.youtube
@@ -146,6 +151,8 @@ def cast(args):
 		print("{0} is busy".format(cast))
 		return
 
+        if args.pid:
+                open(args.pid, 'w').write(str(os.getpid()))
 
 	media = [] # list of (url, filetype)
 	files = {} # dict of handle : (filepath, filetype)
@@ -164,6 +171,8 @@ def cast(args):
 		httpd = HTTPServer((args.host, args.port), build_stream)
 		threading.Thread(target=httpd.serve_forever).start()
 
+        stop_signal = False
+        signal.signal(signal.SIGTERM, signal_handler)
 	try:
 		for (url, filetype) in media:
 			print("Casting {0} ({1}) to {2}".format(url, filetype, cast))
@@ -176,7 +185,7 @@ def cast(args):
 			else:
 				cast.play_media(url, filetype)
 
-			while not controller.is_idle: #or not yt_controller.is_idle:
+			while not controller.is_idle and not stop_signal: #or not yt_controller.is_idle:
 				pass
 
 			time.sleep(args.wait)
@@ -197,6 +206,7 @@ if __name__ == "__main__":
 	parser.add_argument("-n", "--host",      type=str, default=get_localhost(),                            help="hostname or IP to serve content")
 	parser.add_argument("-p", "--port",      type=int, default=5403,                                       help="port on which to serve content")
 	parser.add_argument("-d", "--device",    type=str, default=None,                                       help="name of cast target")
+        parser.add_argument(      "--pid",       type=str, default=None,                                       help="file to write PID to")
 	args = parser.parse_args()
 
 	cast(args)
