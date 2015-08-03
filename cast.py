@@ -186,7 +186,7 @@ def cast(args):
 				# So don't even bother yet.
 				print("Ignoring youtube link")
 			else:
-				cast.play_media(url, filetype)
+				cast.play_media(url, filetype, title=args.title)
 
 			while not controller.is_idle and not stop_signal: #or not yt_controller.is_idle:
 				pass
@@ -211,6 +211,7 @@ if __name__ == "__main__":
 	parser.add_argument("-d", "--device",    type=str, default=None,                                       help="name of cast target")
         parser.add_argument(      "--pid",       type=str, default=None,                                       help="file to write PID to")
         parser.add_argument(      "--mimetype",  type=str, default=None,                                       help="skip mime type detection for remote content, use provided one")
+        parser.add_argument(      "--title",     type=str, default=None,                                       help="on screen title to show")                
 	args = parser.parse_args()
 
 	cast(args)

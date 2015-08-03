@@ -165,21 +165,23 @@ class MediaController(BaseController):
                 'contentId': url,
                 'streamType': stream_type,
                 'contentType': content_type,
-                # 'metadata': {'type': 2,
-                #              'metadataType': 0,
-                #              'title': 'Main title PyChromecast!! :-)',
-                #              'subtitle': "Subtitle"}
+                 'metadata': {'type': 2,
+                              'metadataType': 0,
+                              'title': title,
+                              'subtitle': title}
             },
             MESSAGE_TYPE: TYPE_LOAD,
             'currentTime': current_time,
             'autoplay': autoplay,
-            'customData': {}
+            'customData': {'payload': {}}
         }
 
         if title:
+            # this doesn't seem to do anything?
             msg['customData']['payload']['title'] = title
 
         if thumb:
+            # this doesn't seem to do anything?            
             msg['customData']['payload']['thumb'] = thumb
 
         self.send_message(msg, inc_session_id=True)
