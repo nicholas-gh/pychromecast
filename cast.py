@@ -79,12 +79,15 @@ def resolve_name(name, max_depth, args):
 			return
 	else:
 		# remote file
-		with contextlib.closing(urllib2.urlopen(parsed.geturl())) as source:
-			filetype = source.info()["content-type"]
-			url = source.geturl()
-			if filetype in supportedtypes:
-				yield (url, filetype, None, None)
-			return
+                if args.mimetype:
+                        yield (parsed.geturl(), args.mimetype, None, None)
+                        return
+                with contextlib.closing(urllib2.urlopen(parsed.geturl())) as source:
+                        filetype = source.info()["content-type"]
+                        url = source.geturl()
+                        if filetype in supportedtypes:
+                                yield (url, filetype, None, None)
+                        return
 
 	# youtube link or ID
 	youtube_re = re.compile(r"(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})")
@@ -207,6 +210,7 @@ if __name__ == "__main__":
 	parser.add_argument("-p", "--port",      type=int, default=5403,                                       help="port on which to serve content")
 	parser.add_argument("-d", "--device",    type=str, default=None,                                       help="name of cast target")
         parser.add_argument(      "--pid",       type=str, default=None,                                       help="file to write PID to")
+        parser.add_argument(      "--mimetype",  type=str, default=None,                                       help="skip mime type detection for remote content, use provided one")
 	args = parser.parse_args()
 
 	cast(args)
